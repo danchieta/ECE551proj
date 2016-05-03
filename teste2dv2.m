@@ -6,6 +6,8 @@ load('paredes.mat');
 IE = 1000;
 JE = 1000;
 
+video = 1;
+
 olay = 302;
 
 ic = 240+olay;
@@ -36,6 +38,7 @@ tau = 6*dt;
 t = [1:nsteps]*dt;
 g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2);
 
+%iniciando vetores antes do loop
 Ez = zeros(IE,JE);
 Hx = zeros(IE,JE);
 Hy = zeros(IE,JE);
@@ -46,6 +49,13 @@ title('Pulse in time')
 xlabel('t')
 ylabel('g(t)')
 
+if video
+    vidObj = VideoWriter('FDTD.avi');
+    vidObj.Quality = 100;
+    vidObj.FrameRate = 30;
+    open(vidObj);
+end
+%iniciando vetores antes do loop
 EzRx1 = zeros(1,nsteps);
 EzRx2 = zeros(1,nsteps);
 EzRx3 = zeros(1,nsteps);
@@ -72,7 +82,15 @@ for k = 2:nsteps
         end
     end
     
-    
+    if (k==2 || ~(rem(k,5)))&& video
+        h= figure;
+        imagesc(abs(Ez(303:699,303:699)))
+        set(gca,'YDir','normal')
+        title(['time: ' num2str(k*dt/1e-9) 'ns'])
+        writeVideo(vidObj, getframe(h));
+        close 
+        
+    end
     
     if k == 100
         salvoEz=Ez;
