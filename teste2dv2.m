@@ -26,8 +26,8 @@ Rx2x = 270+olay;
 Rx2y = 300+olay;
 
 %Variáveis do ambiente
-c = 2.99792458e8;       %velocidade da luz
-mi0 = ones(IE,JE)*4*pi*1e-7;          %permeabilidade do vacuo
+c = 2.99792458e8;               %velocidade da luz
+mi0 = ones(IE,JE)*4*pi*1e-7;    %permeabilidade do vacuo
 eps0 = 1e-9/(36*pi)*epsilon;    %permissividade do vacuo
 %mi0 = 1./(epsilon*c^2);
 
@@ -77,21 +77,24 @@ for k = 2:nsteps
         end
     end
     
-    EzRx1(k) = Ez(ic,jc);       %
-    EzRx2(k) = Ez(Rx2y,Rx2x);   %
-    EzRx3(k) = Ez(Rx3y,Rx3x);   %
+    Ez(ic,jc) = g(k);   % Excitação na fonte do pulso
+    
+    EzRx1(k) = Ez(ic,jc);       % Campo detectado na fonte
+    EzRx2(k) = Ez(Rx2y,Rx2x);   % Campo detectado em Rx2
+    EzRx3(k) = Ez(Rx3y,Rx3x);   % Campo detectado em Rx3
     
 %     g = exp(-0.5*((t0-k)/tau)^2);
-    Ez(ic,jc) = g(k);
-    
+
     for j = 1:JE-1
         for i = 1:IE-1
+            % Cálculo do campo H para todos os pontos no espaço
             Hx(i,j) = Hx(i,j) + (dt/mi0(i,j))*(Ez(i,j)-Ez(i,j+1))/D;
             Hy(i,j) = Hy(i,j) + (dt/mi0(i,j))*(Ez(i+1,j)-Ez(i,j))/D;
         end
     end
     
     if (k==2 || ~(rem(k,5)))&& video
+        % Aqui são feitos os quadros pro vídeo
         h= figure;
         imagesc(abs(Ez(303:699,303:699)))
         set(gca,'YDir','normal')
@@ -101,6 +104,7 @@ for k = 2:nsteps
         
     end
     
+    % Salva algumas amostras de Ez no tempo
     if k == 100
         salvoEz=Ez;
     end
@@ -115,6 +119,7 @@ for k = 2:nsteps
 end
 tempo = toc
 
+close(vidObj); % Grava o vídeo  no arquivo
 
 figure(2)
 subplot(2,2,1)
