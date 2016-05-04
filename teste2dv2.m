@@ -3,6 +3,7 @@ close all
 clc
 
 load('paredes.mat');
+
 IE = 1000;
 JE = 1000;
 
@@ -15,13 +16,16 @@ jc = 350+olay;
 
 D = 0.03;   %Tamanho da célula
 
-%Coordenadas dos receptores
+%Coordenadas dos receptores:
+%Receptor 1
 Rx3x = 210+olay;
 Rx3y = 300+olay;
 
+%Receptor 2
 Rx2x = 270+olay;
 Rx2y = 300+olay;
 
+%Variáveis do ambiente
 c = 2.99792458e8;       %velocidade da luz
 mi0 = ones(IE,JE)*4*pi*1e-7;          %permeabilidade do vacuo
 eps0 = 1e-9/(36*pi)*epsilon;    %permissividade do vacuo
@@ -32,11 +36,11 @@ nsteps = 500;
 %t = dt*1:dt:nsteps*dt;
 
 %função geradora de pulso
-Ap = 1;
-t0 = 20*dt;
-tau = 6*dt;
-t = [1:nsteps]*dt;
-g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2);
+Ap = 1;                 %Amplitude máxima
+t0 = 20*dt;             %Tempo onde o pulso está localizado
+tau = 6*dt;             %Largura do pulso
+t = [1:nsteps]*dt;      %vetor de tempo
+g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); %função
 
 %iniciando vetores antes do loop
 Ez = zeros(IE,JE);
@@ -44,33 +48,38 @@ Hx = zeros(IE,JE);
 Hy = zeros(IE,JE);
 
 figure(1)
+%Plota a função geradora de pulso
 plot(t,g)
 title('Pulse in time')
 xlabel('t')
 ylabel('g(t)')
 
 if video
+    %Objeto para exportar vídeo com os quadros
     vidObj = VideoWriter('FDTD.avi');
     vidObj.Quality = 100;
     vidObj.FrameRate = 30;
     open(vidObj);
 end
+
 %iniciando vetores antes do loop
 EzRx1 = zeros(1,nsteps);
 EzRx2 = zeros(1,nsteps);
 EzRx3 = zeros(1,nsteps);
 
 tic
+%loop no tempo
 for k = 2:nsteps
     for j = 2:JE-1
         for i = 2:IE-1
+            %Cálculo do campo E para todos os pontos no espaço
             Ez(i,j) = Ez(i,j) + (dt/eps0(i,j))*(Hy(i,j)-Hy(i-1,j)-Hx(i,j)+Hx(i,j-1))/D;
         end
     end
     
-    EzRx1(k) = Ez(ic,jc);
-    EzRx2(k) = Ez(Rx2y,Rx2x);
-    EzRx3(k) = Ez(Rx3y,Rx3x);
+    EzRx1(k) = Ez(ic,jc);       %
+    EzRx2(k) = Ez(Rx2y,Rx2x);   %
+    EzRx3(k) = Ez(Rx3y,Rx3x);   %
     
 %     g = exp(-0.5*((t0-k)/tau)^2);
     Ez(ic,jc) = g(k);
