@@ -124,27 +124,39 @@ close(vidObj); % Grava o vídeo  no arquivo
 figure(2)
 subplot(2,2,1)
 imagesc(abs(salvoEz(303:699,303:699)));
+colorbar('EastOutside')
+title(['Passo 100; ' num2str(100*dt/1e-9) 'ns'])
 set(gca,'YDir','normal')
 
 subplot(2,2,2)
 imagesc(abs(salvoEz2(303:699,303:699)));
+colorbar('EastOutside')
+title(['Passo 250; ' num2str(250*dt/1e-9) 'ns'])
 set(gca,'YDir','normal')
 
 subplot(2,2,3)
 imagesc(abs(salvoEz3(303:699,303:699)));
+colorbar('EastOutside')
+title(['Passo 350; ' num2str(350*dt/1e-9) 'ns'])
 set(gca,'YDir','normal')
 
 subplot(2,2,4)
 imagesc(abs(Ez(303:699,303:699)))
+colorbar('EastOutside')
+title(['Passo 500; ' num2str(500*dt/1e-9) 'ns'])
 set(gca,'YDir','normal')
 
 figure(3)
 subplot(3,1,1)
-plot(t,EzRx1)
+plot(t/1e-9,EzRx1)
+title('Intensidade dos campos elétricos nos receptores')
+xlabel('t (ns) - receptor 1')
 subplot(3,1,2)
 plot(t,EzRx2)
+xlabel('t (ns) - receptor 2')
 subplot(3,1,3)
 plot(t,EzRx3)
+xlabel('t (ns) - receptor 3')
 
 save('var2.mat', 'salvoEz', 'salvoEz2', 'salvoEz3', 'Ez', 'EzRx1', ...
     'EzRx2', 'EzRx3');
