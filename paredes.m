@@ -29,8 +29,9 @@ for i=1:397
 end
 
 figure
-imagesc(epsilon(303:699,303:699)); 
+imagesc(1-epsilon); 
 %imagesc(epsilon)
+colormap(gray)
 set(gca,'YDir','normal')
 
 save('paredes.mat', 'epsilon');

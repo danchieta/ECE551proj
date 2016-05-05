@@ -3,14 +3,14 @@ close all
 clc
 
 load('paredes.mat');
-
+% Tamanho do ambiente simulado
 IE = 1000;
 JE = 1000;
 
 video = 1;
 
 olay = 302;
-
+% Coordenadas da fonte
 ic = 240+olay;
 jc = 350+olay;
 
@@ -49,9 +49,9 @@ Hy = zeros(IE,JE);
 
 figure(1)
 %Plota a função geradora de pulso
-plot(t,g)
+plot(t/1e-9,g)
 title('Pulse in time')
-xlabel('t')
+xlabel('t (ns)')
 ylabel('g(t)')
 
 if video
@@ -149,14 +149,24 @@ set(gca,'YDir','normal')
 figure(3)
 subplot(3,1,1)
 plot(t/1e-9,EzRx1)
-title('Intensidade dos campos elétricos nos receptores')
+title('Intensidade de campo elétrico nos receptores')
 xlabel('t (ns) - receptor 1')
+ylabel('Ez')
 subplot(3,1,2)
 plot(t,EzRx2)
 xlabel('t (ns) - receptor 2')
+ylabel('Ez')
 subplot(3,1,3)
 plot(t,EzRx3)
 xlabel('t (ns) - receptor 3')
+ylabel('Ez')
+
+figure(4)
+imagesc(abs(salvoEz3(303:699,303:699)));
+colorbar('EastOutside')
+title(['Passo 350; ' num2str(350*dt/1e-9) 'ns'])
+set(gca,'YDir','normal')
+
 
 save('var2.mat', 'salvoEz', 'salvoEz2', 'salvoEz3', 'Ez', 'EzRx1', ...
     'EzRx2', 'EzRx3');
