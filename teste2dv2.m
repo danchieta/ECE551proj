@@ -14,7 +14,7 @@ olay = 302;
 ic = 240+olay;
 jc = 350+olay;
 
-D = 0.03;   %Tamanho da célula
+D = 0.03;   %Tamanho da cï¿½lula
 
 %Coordenadas dos receptores:
 %Receptor 1
@@ -25,7 +25,7 @@ Rx3y = 300+olay;
 Rx2x = 270+olay;
 Rx2y = 300+olay;
 
-%Variáveis do ambiente
+%Variï¿½veis do ambiente
 c = 2.99792458e8;               %velocidade da luz
 mi0 = ones(IE,JE)*4*pi*1e-7;    %permeabilidade do vacuo
 eps0 = 1e-9/(36*pi)*epsilon;    %permissividade do vacuo
@@ -35,12 +35,12 @@ dt = 0.7*(D/(sqrt(2)*c));
 nsteps = 500;
 %t = dt*1:dt:nsteps*dt;
 
-%função geradora de pulso
-Ap = 1;                 %Amplitude máxima
-t0 = 20*dt;             %Tempo onde o pulso está localizado
+%funï¿½ï¿½o geradora de pulso
+Ap = 1;                 %Amplitude mï¿½xima
+t0 = 20*dt;             %Tempo onde o pulso estï¿½ localizado
 tau = 6*dt;             %Largura do pulso
 t = [1:nsteps]*dt;      %vetor de tempo
-g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); %função
+g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); %funï¿½ï¿½o
 
 %iniciando vetores antes do loop
 Ez = zeros(IE,JE);
@@ -48,14 +48,14 @@ Hx = zeros(IE,JE);
 Hy = zeros(IE,JE);
 
 figure(1)
-%Plota a função geradora de pulso
+%Plota a funï¿½ï¿½o geradora de pulso
 plot(t/1e-9,g)
 title('Pulse in time')
 xlabel('t (ns)')
 ylabel('g(t)')
 
 if video
-    %Objeto para exportar vídeo com os quadros
+    %Objeto para exportar vï¿½deo com os quadros
     vidObj = VideoWriter('FDTD.avi');
     vidObj.Quality = 100;
     vidObj.FrameRate = 30;
@@ -72,12 +72,12 @@ tic
 for k = 2:nsteps
     for j = 2:JE-1
         for i = 2:IE-1
-            %Cálculo do campo E para todos os pontos no espaço
+            %Cï¿½lculo do campo E para todos os pontos no espaï¿½o
             Ez(i,j) = Ez(i,j) + (dt/eps0(i,j))*(Hy(i,j)-Hy(i-1,j)-Hx(i,j)+Hx(i,j-1))/D;
         end
     end
     
-    Ez(ic,jc) = g(k);   % Excitação na fonte do pulso
+    Ez(ic,jc) = g(k);   % Excitaï¿½ï¿½o na fonte do pulso
     
     EzRx1(k) = Ez(ic,jc);       % Campo detectado na fonte
     EzRx2(k) = Ez(Rx2y,Rx2x);   % Campo detectado em Rx2
@@ -87,14 +87,14 @@ for k = 2:nsteps
 
     for j = 1:JE-1
         for i = 1:IE-1
-            % Cálculo do campo H para todos os pontos no espaço
+            % Cï¿½lculo do campo H para todos os pontos no espaï¿½o
             Hx(i,j) = Hx(i,j) + (dt/mi0(i,j))*(Ez(i,j)-Ez(i,j+1))/D;
             Hy(i,j) = Hy(i,j) + (dt/mi0(i,j))*(Ez(i+1,j)-Ez(i,j))/D;
         end
     end
     
     if (k==2 || ~(rem(k,5)))&& video
-        % Aqui são feitos os quadros pro vídeo
+        % Aqui sï¿½o feitos os quadros pro vï¿½deo
         h= figure;
         imagesc(abs(Ez(303:699,303:699)))
         set(gca,'YDir','normal')
@@ -119,7 +119,7 @@ for k = 2:nsteps
 end
 tempo = toc
 
-close(vidObj); % Grava o vídeo  no arquivo
+close(vidObj); % Grava o vï¿½deo  no arquivo
 
 figure(2)
 subplot(2,2,1)
@@ -149,7 +149,7 @@ set(gca,'YDir','normal')
 figure(3)
 subplot(3,1,1)
 plot(t/1e-9,EzRx1)
-title('Intensidade de campo elétrico nos receptores')
+title('Intensidade de campo elï¿½trico nos receptores')
 xlabel('t (ns) - receptor 1')
 ylabel('Ez')
 subplot(3,1,2)
