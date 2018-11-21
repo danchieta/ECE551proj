@@ -14,7 +14,7 @@ dt = 0.99*(D/(sqrt(2)*c));
 nsteps = 500;
 %t = dt*1:dt:nsteps*dt;
 
-%função geradora de pulso
+%funï¿½ï¿½o geradora de pulso
 A0 = 5;
 t0 = 20;
 tau = 6;
@@ -58,7 +58,7 @@ for k = 2:nsteps
         salvoEz3=Ez;
     end
     clc
-    k
+    progress = 100*k/nsteps
 end
 tempo = toc
 
@@ -66,6 +66,7 @@ tempo = toc
 figure(2)
 subplot(2,2,1)
 imagesc(abs(salvoEz));
+axis('equal')
 
 subplot(2,2,2)
 imagesc(abs(salvoEz2));

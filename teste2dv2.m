@@ -2,28 +2,35 @@ clear
 close all
 clc
 
-load('paredes.mat');
-% Tamanho do ambiente simulado
-IE = 1000;
-JE = 1000;
+table = [0 1 2; 4.2 5 1];
+epsilon = permittivitymap('scene.png',table);
+
+% width of border arround the map that won't be shown but will exist for
+% simulation purposes
+padding = 302;
+
+% map of relative permittivity
+epsilon = padmap(epsilon,1,padding);
+
+% dimensions of the simulated environment
+[IE, JE] = size(epsilon);
 
 video = 1;
 
-olay = 302;
 % Coordenadas da fonte
-ic = 240+olay;
-jc = 350+olay;
+ic = 240+padding;
+jc = 350+padding;
 
 D = 0.03;   %Tamanho da c�lula
 
 %Coordenadas dos receptores:
 %Receptor 1
-Rx3x = 210+olay;
-Rx3y = 300+olay;
+Rx3x = 210+padding;
+Rx3y = 300+padding;
 
 %Receptor 2
-Rx2x = 270+olay;
-Rx2y = 300+olay;
+Rx2x = 270+padding;
+Rx2y = 300+padding;
 
 %Vari�veis do ambiente
 c = 2.99792458e8;               %velocidade da luz
