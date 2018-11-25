@@ -2,9 +2,13 @@ clear
 close all
 clc
 
-table = [0 1 2;
-    4.2 5 1];
-epsilon = permittivitymap('scene.png',table);
+% filename of the scene image file
+% use a grayscale png file preferably
+scene = 'scene2.png';
+table = [0 255;
+     5 1];
+epsilon = permittivitymap(scene,table);
+
 
 % width of border arround the map that won't be shown but will exist for
 % simulation purposes
@@ -17,66 +21,80 @@ epsilon = padmap(epsilon,1,padding);
 env_size = size(epsilon);
 [IE, JE] = size(epsilon);
 
-% set here whether a video will be generated
+% set here whether a video will be generated or not
 video = 1;
 
 % Coordinates of the source
-source = sub2ind(size(epsilon),164+padding,295+padding);
+Tx = 35;
+Ty = 166;
+source = sub2ind(size(epsilon),Tx+padding,Ty+padding);
 
 D = 0.03;   % length of side of each cell
 
 %Coordinates of receptors:
 %Receptor 1
-Rx3x = 210+padding;
-Rx3y = 300+padding;
+Rx3x = 164+padding;
+Rx3y = 161+padding;
 
 %Receptor 2
-Rx2x = 270+padding;
-Rx2y = 300+padding;
+Rx2x = 163+padding;
+Rx2y = 32+padding;
 
 % Environment variables
-c = 2.99792458e8;               % light speed
-mu0 = 4*pi*1e-7;                % free space permeability
-eps0 = 1/(c^2*mu0);
-mir = ones(env_size)*4*pi*1e-7;    %permeabilidade do vacuo
-epsr = 1e-9/(36*pi)*epsilon;    %permissividade do vacuo
-%mi0 = 1./(epsilon*c^2);
+c = 2.99792458e8; % light speed
+mu0 = 4*pi*1e-7; % free space permeability
+eps0 = 1/(c^2*mu0); % free space permittivity            
+
+% calculating actual permittivity and permeability from relative values
+mir = ones(env_size)*4*pi*1e-7; 
+epsr = eps0*epsilon;
 
 dt = 0.7*(D/(sqrt(2)*c));
 nsteps = 800;
 %t = dt*1:dt:nsteps*dt;
 
-%fun��o geradora de pulso
-Ap = 1;                 %Amplitude m�xima
-t0 = 20*dt;             %Tempo onde o pulso est� localizado
-tau = 6*dt;             %Largura do pulso
-t = [1:nsteps]*dt;      %vetor de tempo
-g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); %fun��o
+% pulse function
+Ap = 1;                 % Maximum amplitude
+t0 = 20*dt;             % time of the pulse
+tau = 6*dt;             % pulse width
+t = [1:nsteps]*dt;      % time vector
+g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); % function
 
-%iniciando vetores antes do loop
+% initializin arrays before loop
 Ez = zeros(env_size);
 Hx = zeros(env_size);
 Hy = zeros(env_size);
+EzRx1 = zeros(1,nsteps);
+EzRx2 = zeros(1,nsteps);
+EzRx3 = zeros(1,nsteps);
+
 
 figure(1)
-%Plota a fun��o geradora de pulso
+imshow(imread(scene))
+hold on
+plot(Ty, Tx, 'bx')
+text(Ty-39, Tx, 'Tx1/Rx1')
+plot(Rx3y - padding, Rx3x - padding, 'bo')
+text(Rx3y - padding -5, Rx3x - padding - 10, 'Rx3')
+plot(Rx2y - padding, Rx2x - padding, 'bo')
+text(Rx2y - padding + 5, Rx2x - padding, 'Rx2')
+
+% plot pulse generating function
+figure(2)
 plot(t/1e-9,g)
 title('Pulse in time')
 xlabel('t (ns)')
 ylabel('g(t)')
 
 if video
-    %Objeto para exportar v�deo com os quadros
+    % declare video object
     v = VideoWriter('FDTD.avi');
     v.Quality = 100;
     v.FrameRate = 30;
     open(v);
 end
 
-%iniciando vetores antes do loop
-EzRx1 = zeros(1,nsteps);
-EzRx2 = zeros(1,nsteps);
-EzRx3 = zeros(1,nsteps);
+
 
 
 fcounter = 1;
@@ -93,11 +111,12 @@ for k = 2:nsteps
         .*(Hy(2:end,2:end)-Hy(1:end-1,2:end)...
         -Hx(2:end,2:end)+Hx(2:end,1:end-1))/D;
     
-    Ez(source) = g(k);   % Excita��o na fonte do pulso
+    Ez(source) = g(k);   % excitation at source
     
-    EzRx1(k) = Ez(source);       % Campo detectado na fonte
-    EzRx2(k) = Ez(Rx2y,Rx2x);   % Campo detectado em Rx2
-    EzRx3(k) = Ez(Rx3y,Rx3x);   % Campo detectado em Rx3
+    % capturing detected field at transmitter and receptors locations
+    EzRx1(k) = Ez(source);   
+    EzRx2(k) = Ez(Rx2y,Rx2x);
+    EzRx3(k) = Ez(Rx3y,Rx3x);
     
     Hx(:, 1:end-1) = Hx(:, 1:end-1) - (dt./mir(:, 1:end-1))...
         .*(Ez(:, 2:end) - Ez(:, 1:end-1))/D;
@@ -107,7 +126,7 @@ for k = 2:nsteps
    
     if (k==2 || ~(rem(k,5)))&& video
         % capturing video frames
-        figure(5)
+        figure(3)
         imagesc(abs(Ez(padding+1:end-padding,padding+1:end-padding)))
         axis('equal')
         title(['time: ' num2str(k*dt/1e-9) 'ns'])
@@ -116,11 +135,10 @@ for k = 2:nsteps
 
         M(fcounter) = getframe(gcf);
         fcounter  = fcounter +1;
-        %close(gcf)
         
     end
     
-    % Salva algumas amostras de Ez no tempo
+    % Save some time samples of Ez
     if k == 100
         salvoEz=Ez;
     end
@@ -135,37 +153,37 @@ tempo = toc
 
 
 writeVideo(v,M);
-close(v); % Grava o v�deo  no arquivo
+close(v); % writes video file
 
-figure(2)
+figure(4)
 subplot(2,2,1)
 imagesc(abs(salvoEz(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Passo 100; ' num2str(100*dt/1e-9) 'ns'])
+title(['Step 100; ' num2str(100*dt/1e-9) 'ns'])
 axis('equal')
 
 subplot(2,2,2)
 imagesc(abs(salvoEz2(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Passo 250; ' num2str(250*dt/1e-9) 'ns'])
+title(['Step 250; ' num2str(250*dt/1e-9) 'ns'])
 axis('equal')
 
 subplot(2,2,3)
 imagesc(abs(salvoEz3(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Passo 350; ' num2str(350*dt/1e-9) 'ns'])
+title(['Step 350; ' num2str(350*dt/1e-9) 'ns'])
 axis('equal')
 
 subplot(2,2,4)
 imagesc(abs(Ez(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Passo 500; ' num2str(500*dt/1e-9) 'ns'])
+title(['Step 500; ' num2str(500*dt/1e-9) 'ns'])
 axis('equal')
 
-figure(3)
+figure(5)
 subplot(3,1,1)
 plot(t/1e-9,EzRx1)
-title('Intensidade de campo el�trico nos receptores')
+title('Electric field intensity at receptors locations')
 xlabel('t (ns) - receptor 1')
 ylabel('Ez')
 subplot(3,1,2)
@@ -177,10 +195,10 @@ plot(t,EzRx3)
 xlabel('t (ns) - receptor 3')
 ylabel('Ez')
 
-figure(4)
+figure(6)
 imagesc(abs(salvoEz3(padding+1:end-padding,padding+1:end-padding)));
 colorbar('EastOutside')
-title(['Passo 350; ' num2str(350*dt/1e-9) 'ns'])
+title(['Step 350; ' num2str(350*dt/1e-9) 'ns'])
 axis('equal')
 
 

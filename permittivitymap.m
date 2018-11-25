@@ -1,11 +1,12 @@
 function [map] = permittivitymap(img_name, epsilon_table)
 %permittivitymap This function creates the map of electrict permitivity of
 %the environment to be simulated.
-%   img_name is the name of the image on which the map will be based.
+%   img_name is the name of the image on which the map will be based. 
+%   Use a grayscale png image file preferably.
 %   epsilon_table 2-row matrix relating the values of the image on first
 %   row with dieletric constant in the second row.
 
-img = imread(img_name); %read the image
+img = mean(imread(img_name),3); %read the image
 map = zeros(size(img)); %create the map
 
 [~,N] = size(epsilon_table);
