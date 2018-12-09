@@ -1,5 +1,5 @@
 clear
-close all
+% close all
 clc
 
 % filename of the scene image file
@@ -54,11 +54,16 @@ nsteps = 800;
 %t = dt*1:dt:nsteps*dt;
 
 % pulse function
-Ap = 1;                 % Maximum amplitude
-t0 = 20*dt;             % time of the pulse
-tau = 6*dt;             % pulse width
-t = [1:nsteps]*dt;      % time vector
-g = -Ap*sqrt(2*exp(1)/tau^2)*(t-t0).*exp(-((t-t0)/tau).^2); % function
+t = [0:nsteps-1]*dt;
+% wavelength is 10 times size of a cell
+lambda = 10*D;
+f = c/lambda;
+% duration of pulse
+cycles = 5;
+duration = ceil((cycles/f)/dt);
+% pulse itself
+g = sin(2*pi*f*[0:duration-1]*dt).*hamming(duration)';
+g = [g zeros(1,nsteps - length(g))];
 
 % initializin arrays before loop
 Ez = zeros(env_size);
@@ -95,8 +100,7 @@ if video
 end
 
 
-
-
+snapshots = round([0.25:.25:1]*nsteps);
 fcounter = 1;
 
 sez = zeros(nsteps,2);
@@ -114,9 +118,9 @@ for k = 2:nsteps
     Ez(source) = g(k);   % excitation at source
     
     % capturing detected field at transmitter and receptors locations
-    EzRx1(k) = Ez(source);   
-    EzRx2(k) = Ez(Rx2y,Rx2x);
-    EzRx3(k) = Ez(Rx3y,Rx3x);
+    EzRx1(k) = Ez(source+1);   
+    EzRx2(k) = Ez(Rx2x,Rx2y);
+    EzRx3(k) = Ez(Rx3x,Rx3y);
     
     Hx(:, 1:end-1) = Hx(:, 1:end-1) - (dt./mir(:, 1:end-1))...
         .*(Ez(:, 2:end) - Ez(:, 1:end-1))/D;
@@ -130,6 +134,8 @@ for k = 2:nsteps
         imagesc(abs(Ez(padding+1:end-padding,padding+1:end-padding)))
         axis('equal')
         title(['time: ' num2str(k*dt/1e-9) 'ns'])
+        xlabel('y Cells')
+        ylabel('x Cells')
         
         set(gcf,'Position', [100 100 720 480])
 
@@ -139,13 +145,13 @@ for k = 2:nsteps
     end
     
     % Save some time samples of Ez
-    if k == 100
+    if k == snapshots(1)
         salvoEz=Ez;
     end
-    if k == 250
+    if k == snapshots(2)
         salvoEz2=Ez;
     end
-    if k == 350
+    if k == snapshots(3)
         salvoEz3=Ez;
     end
 end
@@ -159,47 +165,61 @@ figure(4)
 subplot(2,2,1)
 imagesc(abs(salvoEz(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Step 100; ' num2str(100*dt/1e-9) 'ns'])
+title(['Step ' num2str(snapshots(1)) '; ' num2str(snapshots(1)*dt/1e-9) 'ns'])
 axis('equal')
+xlabel('y Cells')
+ylabel('x Cells')
 
 subplot(2,2,2)
 imagesc(abs(salvoEz2(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Step 250; ' num2str(250*dt/1e-9) 'ns'])
+title(['Step ' num2str(snapshots(2)) '; ' num2str(snapshots(2)*dt/1e-9) 'ns'])
 axis('equal')
+xlabel('y Cells')
+ylabel('x Cells')
 
 subplot(2,2,3)
 imagesc(abs(salvoEz3(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Step 350; ' num2str(350*dt/1e-9) 'ns'])
+title(['Step ' num2str(snapshots(3)) '; ' num2str(snapshots(3)*dt/1e-9) 'ns'])
 axis('equal')
+xlabel('y Cells')
+ylabel('x Cells')
 
 subplot(2,2,4)
 imagesc(abs(Ez(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Step 500; ' num2str(500*dt/1e-9) 'ns'])
+title(['Step ' num2str(snapshots(4)) '; ' num2str(snapshots(4)*dt/1e-9) 'ns'])
 axis('equal')
+xlabel('y Cells')
+ylabel('x Cells')
 
 figure(5)
 subplot(3,1,1)
 plot(t/1e-9,EzRx1)
-title('Electric field intensity at receptors locations')
-xlabel('t (ns) - receptor 1')
-ylabel('Ez')
+title('Receptor 1')
+xlabel('t (ns)')
+ylabel('Ez (V/m)')
+
 subplot(3,1,2)
 plot(t,EzRx2)
-xlabel('t (ns) - receptor 2')
-ylabel('Ez')
+title('Receptor 2')
+xlabel('t (ns)')
+ylabel('Ez (V/m)')
+
 subplot(3,1,3)
 plot(t,EzRx3)
-xlabel('t (ns) - receptor 3')
-ylabel('Ez')
+title('Receptor 3')
+xlabel('t (ns)')
+ylabel('Ez (V/m)')
 
 figure(6)
-imagesc(abs(salvoEz3(padding+1:end-padding,padding+1:end-padding)));
+imagesc(abs(salvoEz2(padding+1:end-padding,padding+1:end-padding)))
 colorbar('EastOutside')
-title(['Step 350; ' num2str(350*dt/1e-9) 'ns'])
+title(['Step ' num2str(snapshots(2)) '; ' num2str(snapshots(2)*dt/1e-9) 'ns'])
 axis('equal')
+xlabel('y Cells')
+ylabel('x Cells')
 
 
 save('var2.mat', 'salvoEz', 'salvoEz2', 'salvoEz3', 'Ez', 'EzRx1', ...
